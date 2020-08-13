@@ -10,13 +10,11 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class PostSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-    author = serializers.EmailField(source='author.email')
+    created_at = serializers.DateTimeField(format='%d-%m-%Y %H:%M:%S', read_only=True)
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'text', 'category',
-                  'author', 'created_at', 'image')
+        fields = ('id', 'title', 'text', 'category', 'created_at', 'image')
 
     def __get_image_url(self, instance):
         request = self.context.get('request')
@@ -28,8 +26,17 @@ class PostSerializer(serializers.ModelSerializer):
             url = ''
         return url
 
+    def create(self, validated_data):
+        request = self.context.get('request')
+        validated_data['author_id'] = request.user.id
+        post = Post.objects.create(**validated_data)
+        return post
+
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        representation['category'] = CategorySerializer(instance.category).data
+        representation['author'] = instance.author.email
         representation['image'] = self.__get_image_url(instance)
         return representation
 
