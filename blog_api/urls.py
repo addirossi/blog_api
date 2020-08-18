@@ -17,9 +17,23 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+from main.views import CategoriesViewSet, PostViewSet
+
+router = DefaultRouter()
+router.register('categories', CategoriesViewSet)
+router.register('posts', PostViewSet)
+# create -> posts/ POST
+# list -> posts/ GET
+# retrieve -> posts/id/ GET
+# update -> posts/id/ PUT
+# partial_update -> posts/id/ PATCH
+# destroy -> posts/id/ DELETE
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('v1/', include('main.urls')),
+    path('v1/', include(router.urls)),
     path('v1/account/', include('account.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
